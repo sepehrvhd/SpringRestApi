@@ -1,21 +1,17 @@
+
 package com.example.project.models;
 
 import com.example.project.Enums.IsEbabled;
 import com.example.project.Enums.roles;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @AllArgsConstructor
@@ -27,22 +23,25 @@ public class OrginalUsers implements UserDetails {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private String userid;
+    private String userId;
     @Column(columnDefinition = "NVARCHAR(200)")
     private String username;
     private String Password;
     private String EMAIL;
+
     @Enumerated(EnumType.STRING)
     private IsEbabled isEbabled;
 
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Set<OrginalUser_roles> userRoles = new HashSet<>();
+
+    @JsonIgnore
+    @ManyToMany
+            (mappedBy = "users")
+    private Set<OrginalRoles> roles=new HashSet<>();
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
-        return List.of(new SimpleGrantedAuthority(userRoles.toString()));
+        return null;
     }
 
     @Override
@@ -52,7 +51,7 @@ public class OrginalUsers implements UserDetails {
 
     @Override
     public String getUsername() {
-        return getUserid();
+        return getUserId();
     }
 
     @Override
@@ -74,5 +73,7 @@ public class OrginalUsers implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+
 
 }

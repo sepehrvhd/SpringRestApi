@@ -21,7 +21,7 @@ public class JwtService {
 
     private static final String secretKey ="a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6";
 
-
+//claims in payload are give some information about an entity typically user (گزاره)
     public <T> T extractClaim(String token, Function<Claims,T> claimsResolver){
     final Claims claims=extractAllClaims(token);
     return claimsResolver.apply(claims);

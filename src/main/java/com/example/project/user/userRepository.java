@@ -1,3 +1,4 @@
+
 package com.example.project.user;
 
 import com.example.project.models.OrginalUsers;
@@ -7,8 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface userRepository extends JpaRepository<OrginalUsers,Long> {
+public interface userRepository extends JpaRepository<OrginalUsers,String> {
 
 
-    Optional<OrginalUsers> findByuserid(String username);
+    Optional<OrginalUsers> findByUserId(String UserId);
 }
