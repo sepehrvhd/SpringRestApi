@@ -18,12 +18,5 @@ public class OrginalRoles {
     @Id
     private String roleId;
 
-    @ManyToMany
-    @JoinTable(name = "User_Role",
-    joinColumns = @JoinColumn(name = "Role_Id"),
-            inverseJoinColumns = @JoinColumn(name = "User_Id")
-    )
-    private Set<OrginalUsers> users=new HashSet<>();
-
 
 }

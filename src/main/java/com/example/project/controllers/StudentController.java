@@ -3,31 +3,47 @@ package com.example.project.controllers;
 import com.example.project.models.OrginalStudents;
 import com.example.project.repositories.orginalStudentsRepo;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import com.example.project.services.AuthorizationService;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 
 @RestController
 public class StudentController {
     private orginalStudentsRepo orginalStudentsRepo;
 
+    @Autowired
+    private AuthorizationService authorizationService;
+
     public StudentController(orginalStudentsRepo orginalStudentsRepo) {
         this.orginalStudentsRepo = orginalStudentsRepo;
     }
 
     @GetMapping(path = "app/list-of-users")
-    public Iterable<OrginalStudents> list() {
+    public Authentication list() {
 
-        return orginalStudentsRepo.findAll();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication;
+
     }
+
 
     @PostMapping(path = "app/add-user")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public OrginalStudents createStudent(@RequestBody final OrginalStudents orginalStudents) {
+
         orginalStudentsRepo.save(orginalStudents);
         return orginalStudents;
-    }
 
+    }
+    
     @PostMapping(path = "app/get-user")
     public OrginalStudents getStudent(@RequestParam final long id) {
         return orginalStudentsRepo.findById(id).get();

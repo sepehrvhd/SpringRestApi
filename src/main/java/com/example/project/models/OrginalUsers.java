@@ -34,14 +34,24 @@ public class OrginalUsers implements UserDetails {
 
 
     @JsonIgnore
-    @ManyToMany
-            (mappedBy = "users")
+    @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @JoinTable(name = "User_Role",
+            joinColumns = @JoinColumn(name = "User_Id",referencedColumnName = "userId"),
+            inverseJoinColumns = @JoinColumn(name = "Role_Id",referencedColumnName = "roleId")
+    )
     private Set<OrginalRoles> roles=new HashSet<>();
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        Set<GrantedAuthority> authorities = new HashSet<>();
+
+        // Assuming userRoles is the set of OrginalRoles associated with the user
+        for (OrginalRoles role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getRoleId()));
+        }
+
+        return authorities;
     }
 
     @Override
