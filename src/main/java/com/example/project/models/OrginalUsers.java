@@ -21,7 +21,6 @@ import java.util.*;
 public class OrginalUsers implements UserDetails {
 
 
-
     @Id
     private String userId;
     @Column(columnDefinition = "NVARCHAR(200)")
@@ -34,23 +33,24 @@ public class OrginalUsers implements UserDetails {
 
 
     @JsonIgnore
-    @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "User_Role",
-            joinColumns = @JoinColumn(name = "User_Id",referencedColumnName = "userId"),
-            inverseJoinColumns = @JoinColumn(name = "Role_Id",referencedColumnName = "roleId")
+            joinColumns = @JoinColumn(name = "User_Id", referencedColumnName = "userId"),
+            inverseJoinColumns = @JoinColumn(name = "Role_Id", referencedColumnName = "roleId")
     )
-    private Set<OrginalRoles> roles=new HashSet<>();
+    private Set<OrginalRoles> roles = new HashSet<>();
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // Assuming userRoles is the set of OrginalRoles associated with the user
-        for (OrginalRoles role : roles) {
-            authorities.add(new SimpleGrantedAuthority(role.getRoleId()));
+        if (roles != null) {
+            // Assuming userRoles is the set of OrginalRoles associated with the user
+            for (OrginalRoles role : roles) {
+                authorities.add(new SimpleGrantedAuthority(role.getRoleId()));
+            }
         }
-
         return authorities;
     }
 
@@ -84,6 +84,17 @@ public class OrginalUsers implements UserDetails {
         return true;
     }
 
+    public Collection<String> getAuthorityNames() {
+        Set<String> authorityNames = new HashSet<>();
 
+        // Ensure that roles is not null before iterating
+        if (roles != null) {
+            for (OrginalRoles role : roles) {
+                authorityNames.add(role.getRoleId());
+            }
+        }
+
+        return authorityNames;
+    }
 
 }

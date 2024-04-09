@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -34,15 +35,15 @@ public class JwtAuthenthicationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         final String authHeader=request.getHeader("Authorization");
         final String jwt;
-        final String Username;
+        final String UserId;
         if(authHeader==null || !authHeader.startsWith("Bearer ")){
             filterChain.doFilter(request,response);
             return;
         }
         jwt=authHeader.substring(7);
-        Username=jwtService.exractUsername(jwt);
-        if (Username==null && SecurityContextHolder.getContext().getAuthentication()==null){
-            UserDetails userDetails=this.userDetailsService.loadUserByUsername(Username);
+        UserId=jwtService.exractUsername(jwt);
+
+            UserDetails userDetails=this.userDetailsService.loadUserByUsername(UserId);
             if(jwtService.isTokenValid(jwt,userDetails)){
                 UsernamePasswordAuthenticationToken authToken=new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -56,7 +57,8 @@ public class JwtAuthenthicationFilter extends OncePerRequestFilter {
 
             }
 
-        }
+
+        Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
         filterChain.doFilter(request,response);
     }
 

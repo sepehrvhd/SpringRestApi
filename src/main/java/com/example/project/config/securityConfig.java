@@ -19,14 +19,17 @@ public class securityConfig {
     private final JwtAuthenthicationFilter JwtAuthfilter;
     private final AuthenticationProvider authenticationProvider;
 
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/app/**")
+                .requestMatchers("/app/auth/**")
                 .permitAll()
+                .requestMatchers("app/setting/**").hasRole("ADMIN")
                 .anyRequest()
                 .authenticated()
                 .and().sessionManagement()

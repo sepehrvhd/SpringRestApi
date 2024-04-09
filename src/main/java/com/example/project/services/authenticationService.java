@@ -12,13 +12,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,20 +46,39 @@ public class authenticationService {
     }
 
     public AuthenticationResponse login(loginRequest request) {
-        manager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUserID(),
-                        request.getPassword()));
+        Authentication authentication = manager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUserID(), request.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        Optional<OrginalUsers> user = repository.findByUserId(request.getUserID());
 
-        var user=repository.findByUserId(request.getUserID()).orElseThrow();
-        var jwtToken=jwtService.generateToken(user);
+
+
+
+        Collection<String> userAuthorities =user.get().getAuthorityNames();
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+        for (String authority : userAuthorities) {
+            authorities.add(new SimpleGrantedAuthority(authority));
+        }
+        Authentication newAuthentication = new UsernamePasswordAuthenticationToken(
+                authentication.getPrincipal(),
+                authentication.getCredentials(),
+                authorities
+        );
+        SecurityContextHolder.getContext().setAuthentication(newAuthentication);
+
+
+
+
+
+        user= Optional.of(repository.findByUserId(request.getUserID()).orElseThrow());
+        var jwtToken=jwtService.generateToken(user.get());
         return AuthenticationResponse.builder()
                 .token(jwtToken)
-                .build();
+                .user(user.get()).build();
     }
 
 
-    public OrginalUsers addUserRole(String userID, Set<String> role) {
+    public Authentication addUserRole(String userID, Set<String> role) {
         OrginalUsers user = repository.findByUserId(userID)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
         for (String i:role){
@@ -63,31 +86,46 @@ public class authenticationService {
             OrginalRoles rolee = orgRoleRepository.findByRoleId(i)
                     .orElseThrow(() -> new NoSuchElementException("Role not found"));
 
-            // Get the set of roles for the user
+
             Set<OrginalRoles> userRoles = user.getRoles();
 
-            // If the userRoles set is null, initialize it as a new HashSet
+
             if (userRoles == null) {
                 userRoles = new HashSet<>();
             }
 
-            // Check if the user already has the role
+
             boolean roleExists = userRoles.stream().anyMatch(r -> r.getRoleId().equals(role));
             if (!roleExists) {
-                // Add the role to the set of user roles
+
                 userRoles.add(rolee);
 
-                // Set the updated set of roles back to the user
+
                 user.setRoles(userRoles);
 
-                // Save the user entity to update the database
+
 
             } else {
-                // Role already exists for the user, no need to add it again
+
 
             }
         }
+        repository.save(user);
 
-        return repository.save(user);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Collection<String> userAuthorities =user.getAuthorityNames();
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+        for (String authority : userAuthorities) {
+            authorities.add(new SimpleGrantedAuthority(authority));
+        }
+        Authentication newAuthentication = new UsernamePasswordAuthenticationToken(
+                authentication.getPrincipal(),
+                authentication.getCredentials(),
+                authorities
+        );
+         SecurityContextHolder.getContext().setAuthentication(newAuthentication);
+         return SecurityContextHolder.getContext().getAuthentication();
+
     }
 }

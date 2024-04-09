@@ -1,9 +1,7 @@
+
 package com.example.project.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +24,9 @@ public class PropertyGroup {
 
     private String npgValue;
 
-    private String npgNode;
+    @ManyToOne
+    @JoinColumn(name = "npgNode",referencedColumnName = "nbsUuid")
+    private NodeBase NodeBase;
 
 
 

@@ -4,18 +4,19 @@ package com.example.project.controllers;
 import com.example.project.config.JwtService;
 import com.example.project.models.OrginalRoles;
 import com.example.project.models.OrginalUsers;
+import com.example.project.services.authenticationService;
 import com.example.project.user.role.RoleRepository;
 import com.example.project.user.userRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.project.services.authenticationService;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -42,14 +43,9 @@ public class authController {
 
 
 
+    @PostMapping("/signUp")
 
-    /*@PostMapping("/signUp")
-    public ResponseEntity<AuthenticationResponse> register( @RequestBody RegisterRequest request){
-
-    }*/
-    @PostMapping("/signUp1")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public OrginalUsers register1(@RequestBody RegisterRequest request) {
+    public Authentication register1(@RequestBody RegisterRequest request) {
         OrginalUsers user = OrginalUsers.builder()
                 .userId(request.getUserID())
                 .username(request.getUserName())
@@ -64,18 +60,17 @@ public class authController {
             }
         }
         repository.save(user);
-
-
-
-
-        return service.addUserRole(request.getUserID(),request.getRole());
+        return service.addUserRole(request.getUserID(), request.getRole());
 
 
     }
 
 
     @PostMapping("/signIn")
-    public ResponseEntity<AuthenticationResponse> register( @RequestBody loginRequest request){
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody loginRequest request) {
+
+
+        service.login(request);
         return ResponseEntity.ok(service.login(request));
     }
 

@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,6 +28,9 @@ public class NodeBase {
 
     @Column(columnDefinition = "varchar(1)")
     private String flag;
+
+    @OneToMany(mappedBy = "NodeBase", cascade = CascadeType.ALL)
+    private List<PropertyGroup> propertyGroups;
 
 
 }
